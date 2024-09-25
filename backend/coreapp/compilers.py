@@ -184,7 +184,7 @@ class MugenCompiler(Compiler):
     flags: ClassVar[Flags] = COMMON_MSVC_FLAGS
     library_include_flag: str = "/IZ:"
     def available(self) -> bool:
-        return os.path.exists('/backend/compilers/mugen/msvc')
+        return os.path.exists('/app/msvc/bin/x86/cl')
 
 @dataclass(frozen=True)
 class WatcomCompiler(Compiler):
@@ -1404,7 +1404,7 @@ MSVC80 = MSVCCompiler(
     cc=CL_WIN,
 )
 
-CL_MUGEN = '"/msvc/bin/x86/cl" /c /nologo ${COMPILER_FLAGS} /Fd"Z:/tmp/" /Bk"Z:/tmp/" /Fo"Z:${OUTPUT}" "Z:${INPUT}"'
+CL_MUGEN = '"/app/msvc/bin/x86/cl" /c /nologo ${COMPILER_FLAGS} /Fd"Z:/tmp/" /Bk"Z:/tmp/" /Fo"Z:${OUTPUT}" "Z:${INPUT}"'
 
 MSVC1711 = MugenCompiler(
     id="msvc17.11",
