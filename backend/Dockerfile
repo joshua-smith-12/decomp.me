@@ -1,4 +1,4 @@
-FROM ubuntu:22.04 as base
+FROM ubuntu:24.04 as base
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -6,8 +6,8 @@ RUN apt-get update && apt-get install -y \
     python3-pip \
     python3 \
     python-is-python3 \
-    python3.10-venv \
-    python3.10-dev
+    python3-venv \
+    python3-dev
 
 
 FROM base AS nsjail
@@ -30,10 +30,11 @@ RUN git clone "https://github.com/google/nsjail" --recursive --branch 3.1 /nsjai
     && cd /nsjail \
     && make
 
-
 FROM base AS build
 
 RUN apt-get -y update && apt-get install -y \
+    autoconf \
+    build-essential \
     binutils-aarch64-linux-gnu \
     binutils-arm-none-eabi \
     binutils-djgpp \
@@ -53,15 +54,17 @@ RUN apt-get -y update && apt-get install -y \
     libgpgme11 \
     libnl-route-3-200 \
     libprotobuf-dev \
-    libtinfo5 \
-    netcat \
+    libtinfo6 \
+    msitools \
+    netcat-traditional \
     software-properties-common \
     unzip \
     wget \
+    winbind \
     && rm -rf /var/lib/apt/lists/*
 
 RUN curl -sSL https://install.python-poetry.org/ | \
-    POETRY_VERSION=1.8.3 POETRY_HOME=/etc/poetry python3.10 -
+    POETRY_VERSION=1.8.3 POETRY_HOME=/etc/poetry python3 -
 
 COPY --from=nsjail /nsjail/nsjail /bin/nsjail
 
@@ -78,13 +81,17 @@ ARG ENABLE_MSDOS_SUPPORT
 ARG ENABLE_PS2_SUPPORT
 ARG ENABLE_WIN32_SUPPORT
 ARG ENABLE_DREAMCAST_SUPPORT
+# MUGEN custom assembler + compiler
+# this is done on image run to avoid bloated image.
+ARG ENABLE_MUGEN_SUPPORT
 RUN if [ "${ENABLE_MSDOS_SUPPORT}" = "YES" ] || \
     [ "${ENABLE_PS2_SUPPORT}" = "YES" ] || \
     [ "${ENABLE_DREAMCAST_SUPPORT}" = "YES" ] || \
-    [ "${ENABLE_WIN32_SUPPORT}" = "YES" ]; then \
+    [ "${ENABLE_WIN32_SUPPORT}" = "YES" ] || \
+    [ "${ENABLE_MUGEN_SUPPORT}" = "YES" ]; then \
     dpkg --add-architecture i386 && apt-get update && \
     apt-get install -y -o APT::Immediate-Configure=false \
-    wine; \
+    wine64; \
     fi
 
 ARG ENABLE_PSP_SUPPORT
@@ -122,18 +129,22 @@ ENV WINEPREFIX=/tmp/wine
 RUN useradd --create-home user \
     && mkdir -p /sandbox \
     && chown -R user:user /sandbox \
-    && mkdir -p "${WINEPREFIX}" \
-    && chown user:user "${WINEPREFIX}"
+    && mkdir -p "${WINEPREFIX}"
+
+COPY . /backend
+RUN find /backend -type f -print0 | xargs -0 dos2unix
+#RUN chown -R user:user /backend
 
 # switch to non-root user
-USER user
+#USER user
 
 # initialize wine files to /home/user/.wine
 RUN if [ "${ENABLE_MSDOS_SUPPORT}" = "YES" ] || \
     [ "${ENABLE_NDS_ARM9_SUPPORT}" = "YES" ] || \
     [ "${ENABLE_PS2_SUPPORT}" = "YES" ] || \
     [ "${ENABLE_DREAMCAST_SUPPORT}" = "YES" ] || \
-    [ "${ENABLE_WIN32_SUPPORT}" = "YES" ]; then \
+    [ "${ENABLE_WIN32_SUPPORT}" = "YES" ] || \
+    [ "${ENABLE_MUGEN_SUPPORT}" = "YES" ] ; then \
     wineboot --init; \
     fi
 
@@ -163,5 +174,6 @@ ENV ENABLE_PSP_SUPPORT=${ENABLE_PSP_SUPPORT}
 ENV ENABLE_SATURN_SUPPORT=${ENABLE_SATURN_SUPPORT}
 ENV ENABLE_SWITCH_SUPPORT=${ENABLE_SWITCH_SUPPORT}
 ENV ENABLE_WIN32_SUPPORT=${ENABLE_WIN32_SUPPORT}
+ENV ENABLE_MUGEN_SUPPORT=${ENABLE_MUGEN_SUPPORT}
 
 ENTRYPOINT ["/backend/docker_entrypoint.sh"]

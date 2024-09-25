@@ -239,6 +239,16 @@ N3DS = Platform(
     nm_cmd="arm-none-eabi-nm",
 )
 
+MUGEN = Platform(
+    id="mugen",
+    name="MUGEN Decomp Tools",
+    description="MUGEN",
+    arch="i686",
+    assemble_cmd='echo "assembled("$INPUT")" > "$OUTPUT"',
+    objdump_cmd="echo",
+    nm_cmd="echo",
+)
+
 _platforms: OrderedDict[str, Platform] = OrderedDict(
     {
         "dummy": DUMMY,
@@ -257,5 +267,6 @@ _platforms: OrderedDict[str, Platform] = OrderedDict(
         "macosx": MACOSX,
         "msdos": MSDOS,
         "win32": WIN32,
+        "mugen": MUGEN,
     }
 )

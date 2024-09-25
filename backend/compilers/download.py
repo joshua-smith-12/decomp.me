@@ -68,7 +68,7 @@ def get_compiler_raw(
     github_repo="decompme/compilers",
     tag="latest",
 ):
-    logger.info("Processing %s (%s)", compiler_id, platform_id)
+    logger.info("Processing %s (%s, %s, %s)", compiler_id, platform_id, docker_registry, github_repo)
 
     # fast-fail if we cannot create the download_cache
     download_cache = compilers_dir / ".download_cache"
@@ -137,6 +137,7 @@ def get_compiler_raw(
             manifest
             for manifest in data["manifests"]
             if manifest["mediaType"] == "application/vnd.oci.image.manifest.v1+json"
+            or manifest["mediaType"] == "application/vnd.docker.distribution.manifest.v2+json"
         )
     )
     digest = manifest["digest"]

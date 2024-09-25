@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from functools import cache
 from pathlib import Path
 from typing import ClassVar, List, Optional, OrderedDict
+import os
 
 from coreapp import platforms
 from coreapp.flags import (
@@ -40,6 +41,7 @@ from coreapp.platforms import (
     DREAMCAST,
     SWITCH,
     WIN32,
+    MUGEN,
     Platform,
 )
 from django.conf import settings
@@ -177,6 +179,12 @@ class MSVCCompiler(Compiler):
     flags: ClassVar[Flags] = COMMON_MSVC_FLAGS
     library_include_flag: str = "/IZ:"
 
+@dataclass(frozen=True)
+class MugenCompiler(Compiler):
+    flags: ClassVar[Flags] = COMMON_MSVC_FLAGS
+    library_include_flag: str = "/IZ:"
+    def available(self) -> bool:
+        return os.path.exists('/backend/compilers/mugen/msvc')
 
 @dataclass(frozen=True)
 class WatcomCompiler(Compiler):
@@ -1395,6 +1403,14 @@ MSVC80 = MSVCCompiler(
     platform=WIN32,
     cc=CL_WIN,
 )
+
+CL_MUGEN = '"/msvc/bin/x86/cl" /c /nologo ${COMPILER_FLAGS} /Fd"Z:/tmp/" /Bk"Z:/tmp/" /Fo"Z:${OUTPUT}" "Z:${INPUT}"'
+
+MSVC1711 = MugenCompiler(
+    id="msvc17.11",
+    platform=MUGEN,
+    cc=CL_MUGEN,
+)
 # Watcom doesn't like '/' in paths passed to it so we need to replace them.
 WATCOM_ARGS = ' -zq -i="Z:${COMPILER_DIR}/h" -i="Z:${COMPILER_DIR}/h/nt" ${COMPILER_FLAGS} -fo"Z:${OUTPUT}" "Z:${INPUT}"'
 WATCOM_CC = (
@@ -1668,6 +1684,8 @@ _all_compilers: List[Compiler] = [
     WATCOM_106_CPP,
     WATCOM_110_C,
     WATCOM_110_CPP,
+    # MUGEN
+    MSVC1711,
 ]
 
 _compilers = OrderedDict({c.id: c for c in _all_compilers if c.available()})
