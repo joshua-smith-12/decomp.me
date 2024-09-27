@@ -184,6 +184,8 @@ class DiffWrapper:
 
             flags += arch_flags
 
+            if platform.skip_flags: flags = []
+
             if platform.objdump_cmd:
                 try:
                     objdump_proc = sandbox.run_subprocess(

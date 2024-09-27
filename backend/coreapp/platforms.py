@@ -26,6 +26,7 @@ class Platform:
     diff_flags: Flags = field(default_factory=lambda: COMMON_DIFF_FLAGS, hash=False)
     supports_objdump_disassemble: bool = False  # TODO turn into objdump flag
     has_decompiler: bool = False
+    skip_flags: bool = False
 
     @property
     @functools.lru_cache()
@@ -243,9 +244,9 @@ MUGEN = Platform(
     id="mugen",
     name="MUGEN Decomp Tools",
     description="MUGEN",
-    arch="x86",
+    arch="i686",
     assemble_cmd='/app/nasm -f win32 -o "$OUTPUT" "$INPUT"',
-    objdump_cmd="WINEPREFIX=/app/wine /app/msvc/bin/x86/dumpbin /disasm",
+    objdump_cmd="WINEPREFIX=/wine /app/msvc/bin/x86/dumpbin /disasm",
     nm_cmd="i686-w64-mingw32-nm",
 )
 
