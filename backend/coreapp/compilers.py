@@ -1404,7 +1404,7 @@ MSVC80 = MSVCCompiler(
     cc=CL_WIN,
 )
 
-CL_MUGEN = '"/app/msvc/bin/x86/cl" /c /nologo ${COMPILER_FLAGS} /Fd"Z:/tmp/" /Bk"Z:/tmp/" /Fo"Z:${OUTPUT}" "Z:${INPUT}"'
+CL_MUGEN = '"/app/msvc/bin/x86/cl" /c /nologo ${COMPILER_FLAGS} /Fo"${OUTPUT}" "Z:${INPUT}"'
 
 MSVC1711 = MugenCompiler(
     id="msvc17.11",
