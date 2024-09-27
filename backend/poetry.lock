@@ -49,9 +49,9 @@ watchdog = "^4.0.1"
 
 [package.source]
 type = "git"
-url = "https://github.com/simonlindholm/asm-differ.git"
+url = "https://github.com/MugenDecomp/asm-differ-intel.git"
 reference = "HEAD"
-resolved_reference = "eeb204df66c83797985fb0bfad3a6335e4ad2e17"
+resolved_reference = "4678082675f1608a28a5cf338feff437d74b5e1a"
 
 [[package]]
 name = "attrs"
