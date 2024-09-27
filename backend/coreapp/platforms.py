@@ -246,8 +246,9 @@ MUGEN = Platform(
     description="MUGEN",
     arch="i686",
     assemble_cmd='/app/nasm -f win32 -o "$OUTPUT" "$INPUT"',
-    objdump_cmd="WINEPREFIX=/wine /app/msvc/bin/x86/dumpbin /disasm",
-    nm_cmd="i686-w64-mingw32-nm",
+    objdump_cmd="WINEPREFIX=/wine /app/msvc/bin/x86/dumpbin /disasm:nobytes",
+    nm_cmd="WINEPREFIX=/wine /app/msvc/bin/x86/dumpbin /symbols",
+    skip_flags=True,
 )
 
 _platforms: OrderedDict[str, Platform] = OrderedDict(
