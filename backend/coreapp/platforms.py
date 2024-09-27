@@ -243,10 +243,10 @@ MUGEN = Platform(
     id="mugen",
     name="MUGEN Decomp Tools",
     description="MUGEN",
-    arch="i686",
-    assemble_cmd='echo "assembled("$INPUT")" > "$OUTPUT"',
-    objdump_cmd="echo",
-    nm_cmd="echo",
+    arch="x86",
+    assemble_cmd='/app/nasm -f win32 -o "$OUTPUT" "$INPUT"',
+    objdump_cmd="WINEPREFIX=/app/wine /app/msvc/bin/x86/dumpbin /disasm",
+    nm_cmd="i686-w64-mingw32-nm",
 )
 
 _platforms: OrderedDict[str, Platform] = OrderedDict(
