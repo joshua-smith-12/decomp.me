@@ -213,10 +213,9 @@ class DiffWrapper:
             lines = list(filter(lambda k: k.startswith("  "), out.split("\n")))
             lines = lines[:lines.index("  Summary")]
             for i in range(len(lines)):
-                lines[i] = lines[i].lower()
                 line_parts = lines[i].split(":", 1)
                 line_ops = line_parts[1].strip().split(" ", 1)
-                lines[i] = "  " + line_parts[0] + ":\t" + line_ops[0]
+                lines[i] = "  " + line_parts[0].lower() + ":\t" + line_ops[0]
                 if len(line_ops) > 1:
                     lines[i] += "\t" + line_ops[1].strip()
             out = "\n\n\n\n\n\n" + "\n".join(lines)

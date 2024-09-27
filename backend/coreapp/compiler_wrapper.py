@@ -267,6 +267,8 @@ class CompilerWrapper:
 
             asm_path = sandbox.path / "asm.s"
             data = asm.data.replace(".section .late_rodata", ".late_rodata")
+            if platform.id == "mugen":
+                data = "[bits 32]\nsection .text$mn\n" + data
             asm_path.write_text(data + "\n")
 
             object_path = sandbox.path / "object.o"
