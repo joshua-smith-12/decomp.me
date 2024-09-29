@@ -279,7 +279,7 @@ class DiffWrapper:
 
         out = objdump_proc.stdout
         if platform.id == "mugen":
-            symbols = get_symbols(target_data, platform)
+            symbols = DiffWrapper.get_symbols(target_data, platform)
             lines = list(filter(lambda k: k.startswith("  "), out.split("\n")))
             lines = lines[:lines.index("  Summary")]
             for i in range(len(lines)):
