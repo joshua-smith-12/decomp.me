@@ -23,6 +23,7 @@ class Platform:
     assemble_cmd: str
     objdump_cmd: str
     nm_cmd: str
+    symbols_cmd: str
     diff_flags: Flags = field(default_factory=lambda: COMMON_DIFF_FLAGS, hash=False)
     supports_objdump_disassemble: bool = False  # TODO turn into objdump flag
     has_decompiler: bool = False
@@ -248,6 +249,7 @@ MUGEN = Platform(
     assemble_cmd='/app/nasm -f win32 -o "$OUTPUT" "$INPUT"',
     objdump_cmd="WINEPREFIX=/wine /app/msvc/bin/x86/dumpbin /disasm:nobytes",
     nm_cmd="WINEPREFIX=/wine /app/msvc/bin/x86/dumpbin /symbols",
+    symbols_cmd="WINEPREFIX=/wine /app/msvc/bin/x86/dumpbin /symbols",
     skip_flags=True,
 )
 

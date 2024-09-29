@@ -22,6 +22,75 @@ logger = logging.getLogger(__name__)
 
 MAX_FUNC_SIZE_LINES = 25000
 
+X86_JUMP_INSTRUCTIONS = [
+    "call",
+    "jmp",
+    "ljmp",
+    "ja",
+    "jae",
+    "jb",
+    "jbe",
+    "jc",
+    "jcxz",
+    "jecxz",
+    "jrcxz",
+    "je",
+    "jg",
+    "jge",
+    "jl",
+    "jle",
+    "jna",
+    "jnae",
+    "jnb",
+    "jnbe",
+    "jnc",
+    "jne",
+    "jng",
+    "jnge",
+    "jnl",
+    "jnle",
+    "jno",
+    "jnp",
+    "jns",
+    "jnz",
+    "jo",
+    "jp",
+    "jpe",
+    "jpo",
+    "js",
+    "jz",
+    "ja",
+    "jae",
+    "jb",
+    "jbe",
+    "jc",
+    "je",
+    "jz",
+    "jg",
+    "jge",
+    "jl",
+    "jle",
+    "jna",
+    "jnae",
+    "jnb",
+    "jnbe",
+    "jnc",
+    "jne",
+    "jng",
+    "jnge",
+    "jnl",
+    "jnle",
+    "jno",
+    "jnp",
+    "jns",
+    "jnz",
+    "jo",
+    "jp",
+    "jpe",
+    "jpo",
+    "js",
+    "jz",
+]
 
 class DiffWrapper:
     @staticmethod
@@ -210,6 +279,7 @@ class DiffWrapper:
 
         out = objdump_proc.stdout
         if platform.id == "mugen":
+            symbols = get_symbols(target_data, platform)
             lines = list(filter(lambda k: k.startswith("  "), out.split("\n")))
             lines = lines[:lines.index("  Summary")]
             for i in range(len(lines)):
@@ -217,9 +287,60 @@ class DiffWrapper:
                 line_ops = line_parts[1].strip().split(" ", 1)
                 lines[i] = "  " + line_parts[0].lower() + ":\t" + line_ops[0]
                 if len(line_ops) > 1:
-                    lines[i] += "\t" + line_ops[1].strip()
+                    if line_ops[0].strip() in X86_JUMP_INSTRUCTIONS and line_ops[1].strip() in symbols:
+                        lines[i] += "\t" + symbols[line_ops[1].strip()]
+                    else:
+                        lines[i] += "\t" + line_ops[1].strip()
             out = "\n\n\n\n\n\n" + "\n".join(lines)
         return out
+
+    @staticmethod
+    def get_symbols(
+        target_data: bytes,
+        platform: Platform
+    ) -> Dict[str, str]:
+        if platform.id != "mugen":
+            return ""
+
+        with Sandbox() as sandbox:
+            target_path = sandbox.path / "out.s"
+            target_path.write_bytes(target_data)
+
+            flags = []
+
+            if platform.symbols_cmd:
+                try:
+                    symbols_proc = sandbox.run_subprocess(
+                        platform.symbols_cmd.split()
+                        + list(map(shlex.quote, flags))
+                        + [sandbox.rewrite_path(target_path)],
+                        shell=True,
+                        env={
+                            "PATH": PATH,
+                            "COMPILER_BASE_PATH": sandbox.rewrite_path(
+                                settings.COMPILER_BASE_PATH
+                            ),
+                        },
+                        timeout=settings.OBJDUMP_TIMEOUT_SECONDS,
+                    )
+                except subprocess.TimeoutExpired as e:
+                    raise ObjdumpError("Timeout expired")
+                except subprocess.CalledProcessError as e:
+                    raise ObjdumpError.from_process_error(e)
+            else:
+                raise ObjdumpError(f"No symbols command for {platform.id}")
+
+        out = symbols_proc.stdout
+        lines = list(filter(lambda k: "SECT1" in k, out.split("\n")))
+        result = {}
+
+        for line in lines:
+            if "|" in line:
+                target_addr = line.split(" ")[1].strip()
+                target_lab = line.split("|")[1].strip()
+                result[target_lab] = target_addr
+
+        return result
 
     @staticmethod
     def get_dump(
