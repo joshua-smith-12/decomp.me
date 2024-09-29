@@ -23,7 +23,7 @@ class Platform:
     assemble_cmd: str
     objdump_cmd: str
     nm_cmd: str
-    symbols_cmd: str
+    symbols_cmd: str = None
     diff_flags: Flags = field(default_factory=lambda: COMMON_DIFF_FLAGS, hash=False)
     supports_objdump_disassemble: bool = False  # TODO turn into objdump flag
     has_decompiler: bool = False
